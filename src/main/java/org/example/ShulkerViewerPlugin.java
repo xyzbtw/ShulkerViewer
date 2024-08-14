@@ -8,7 +8,7 @@ import org.rusherhack.client.api.plugin.Plugin;
  *
  * @author John200410
  */
-public class ExamplePlugin extends Plugin {
+public class ShulkerViewerPlugin extends Plugin {
 	public static final ShulkerViewer shulkerViewer = new ShulkerViewer();
 	@Override
 	public void onLoad() {

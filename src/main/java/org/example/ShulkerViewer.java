@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -32,11 +31,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-/**
- * Example rusherhack module
- *
- * @author John200410
- */
 public class ShulkerViewer extends ToggleableModule {
 	public Setting<Color> backgroundColor = new ColorSetting("Background", new Color(248, 248, 255, 150));
 	public Setting<Boolean> compact = new BooleanSetting("Compact", false);
@@ -185,7 +179,7 @@ public class ShulkerViewer extends ToggleableModule {
 
 			NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
 			CompoundTag nbt = getCompoundTag(stack);
-			boolean compact = ExamplePlugin.shulkerViewer.compact.getValue();
+			boolean compact = ShulkerViewerPlugin.shulkerViewer.compact.getValue();
 
 			if (nbt.contains("Items", 9)) {
 				compact = processItems(nbt, items, compact);

@@ -1,6 +1,6 @@
 {
-  "Plugin-Class": "org.example.ExamplePlugin",
-  "Name": "ShulkerViewerW",
+  "Plugin-Class": "org.example.ShulkerViewerPlugin",
+  "Name": "ShulkerViewer",
   "Version": "${plugin_version}",
   "Description": "View shulkers on sides yk",
   "Authors": [
