@@ -1,0 +1,12 @@
+{
+  "Plugin-Class": "org.example.ExamplePlugin",
+  "Name": "ShulkerViewerW",
+  "Version": "${plugin_version}",
+  "Description": "View shulkers on sides yk",
+  "Authors": [
+    "xyzbtw"
+  ],
+  "Minecraft-Versions": [
+    "1.20.4"
+  ]
+}
