@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -181,8 +182,10 @@ public class ShulkerViewer extends ToggleableModule {
 			CompoundTag nbt = getCompoundTag(stack);
 			boolean compact = ShulkerViewerPlugin.shulkerViewer.compact.getValue();
 
+
 			if (nbt.contains("Items", 9)) {
-				compact = processItems(nbt, items, compact);
+				ContainerHelper.loadAllItems(nbt, items);
+				compact = processItems(items, compact);
 			}
 
 			if (compact) {
@@ -198,22 +201,14 @@ public class ShulkerViewer extends ToggleableModule {
 		}
 
 		private static CompoundTag getCompoundTag(ItemStack stack) {
-			return stack.getOrCreateTag().contains("BlockEntityTag", 10)
-					? stack.getTag().getCompound("BlockEntityTag")
-					: stack.getTag();
+			return stack.getOrCreateTag().getCompound("BlockEntityTag");
 		}
 
-		private static boolean processItems(CompoundTag nbt, NonNullList<ItemStack> items, boolean compact) {
+		private static boolean processItems(NonNullList<ItemStack> items, boolean compact) {
 			Item unstackable = null;
-			ListTag itemTags = nbt.getList("Items", 10);
 
-			for (int i = 0; i < itemTags.size(); i++) {
-				CompoundTag itemTag = itemTags.getCompound(i);
-				int slot = itemTag.contains("Slot", 99) ? itemTag.getByte("Slot") : i;
-				ItemStack item = ItemStack.of(itemTag);
-				items.set(slot, item);
-
-				if (item.getMaxStackSize() == 1) {
+			for (ItemStack item : items) {
+				if (!item.isEmpty() && item.getMaxStackSize() == 1) {
 					if (unstackable != null && !item.getItem().equals(unstackable)) {
 						compact = false;
 					}
