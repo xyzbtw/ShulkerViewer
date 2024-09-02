@@ -62,7 +62,7 @@ public class ShulkerViewer extends ToggleableModule {
 	private final Set<Shulker> shulkers = new CopyOnWriteArraySet<>();
 	private int height, offset;
 
-	@Subscribe
+	@Subscribe(priority = -9999, stage = Stage.POST)
 	public void onRender2D(EventRender2D event) {
 		final GuiGraphics context = event.getRenderContext().graphics();
 
@@ -71,7 +71,6 @@ public class ShulkerViewer extends ToggleableModule {
 
 		int y = (int) ((3 + offset));
 		int totalHeight = 0;
-
 		context.pose().pushPose();
 		context.pose().scale(scale.getValue(), scale.getValue(), scale.getValue());
 
