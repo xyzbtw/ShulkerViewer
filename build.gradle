@@ -42,7 +42,7 @@ dependencies {
 	}
 	
 	//rusherhack api
-	rusherhackApi "org.rusherhack:rusherhack-api:$minecraft_version-SNAPSHOT"
+	rusherhackApi "org.rusherhack:rusherhack-api:1.21-SNAPSHOT"
 }
 
 loom {

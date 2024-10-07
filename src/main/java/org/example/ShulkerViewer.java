@@ -2,7 +2,10 @@ package org.example;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.inventory.Slot;
@@ -10,9 +13,12 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.world.level.storage.loot.ContainerComponentManipulator;
+import net.minecraft.world.level.storage.loot.ContainerComponentManipulators;
 import org.joml.Vector2d;
 import org.rusherhack.client.api.events.client.EventUpdate;
 import org.rusherhack.client.api.events.client.input.EventMouse;
@@ -40,7 +46,7 @@ import static java.awt.Color.WHITE;
 
 public class ShulkerViewer extends ToggleableModule {
 	public Setting<Boolean> dynamicColor = new BooleanSetting("DynamicColor", false);
-	public Setting<Color> backgroundColor = new ColorSetting("Background", new Color(248, 248, 255, 150)).setVisibility(()-> !dynamicColor.getValue());
+	public Setting<Color> backgroundColor = new ColorSetting("DefaultColor", new Color(248, 248, 255, 150));
 	public Setting<Boolean> compact = new BooleanSetting("Compact", false);
 	public Setting<Float> scale = new NumberSetting<>("Scale", 1.0f, 0.5f, 1.5f);
 
@@ -155,7 +161,7 @@ public class ShulkerViewer extends ToggleableModule {
 	public void mouseClick(EventMouse.Key event){
 		if(event.getButton() == 0 && event.getAction() == 1 && event.getMouseX() < 200) {
 			mousePos.set(event.getMouseX(), event.getMouseY());
-			System.out.println("CLICKED AT X:" + mousePos.x + ", Y:" + mousePos.y);
+			//System.out.println("CLICKED AT X:" + mousePos.x + ", Y:" + mousePos.y);
 		}
 	}
 
@@ -205,18 +211,29 @@ public class ShulkerViewer extends ToggleableModule {
 		}
 
 		public static Shulker create(ItemStack stack, int slot) {
-			if (!isValidShulkerBox(stack)) {
+			if (!(stack.getItem() instanceof BlockItem) || !(((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock)) {
 				return null;
 			}
 
 			NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
-			CompoundTag nbt = getCompoundTag(stack);
+			ItemContainerContents component = stack.getComponents().get(DataComponents.CONTAINER);
+
 			boolean compact = ShulkerViewerPlugin.shulkerViewer.compact.getValue();
 
+			if (component != null) {
+				Item unstackable = null;
+				List<ItemStack> list = component.stream().toList();
 
-			if (nbt.contains("Items", 9)) {
-				ContainerHelper.loadAllItems(nbt, items);
-				compact = processItems(items, compact);
+				for (int i = 0; i < list.size(); i++) {
+					ItemStack item = list.get(i);
+					items.set(i, item);
+					if (item.getMaxStackSize() == 1) {
+						if (unstackable != null && !item.getItem().equals(unstackable)) {
+							compact = false;
+						}
+						unstackable = item.getItem();
+					}
+				}
 			}
 
 			if (compact) {
@@ -224,30 +241,6 @@ public class ShulkerViewer extends ToggleableModule {
 			}
 
 			return new Shulker(stack, compact, slot, items);
-		}
-
-		private static boolean isValidShulkerBox(ItemStack stack) {
-			return stack.getItem() instanceof BlockItem &&
-					((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock;
-		}
-
-		private static CompoundTag getCompoundTag(ItemStack stack) {
-			return stack.getOrCreateTag().getCompound("BlockEntityTag");
-		}
-
-		private static boolean processItems(NonNullList<ItemStack> items, boolean compact) {
-			Item unstackable = null;
-
-			for (ItemStack item : items) {
-				if (!item.isEmpty() && item.getMaxStackSize() == 1) {
-					if (unstackable != null && !item.getItem().equals(unstackable)) {
-						compact = false;
-					}
-					unstackable = item.getItem();
-				}
-			}
-
-			return compact;
 		}
 
 		private static NonNullList<ItemStack> compactItems(NonNullList<ItemStack> items) {
@@ -270,19 +263,19 @@ public class ShulkerViewer extends ToggleableModule {
 		}
 	}
 
-	public static Color getShulkerColor(ItemStack shulkerItem) {
+	public Color getShulkerColor(ItemStack shulkerItem) {
 		if (shulkerItem.getItem() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
 			if (block == Blocks.ENDER_CHEST) return new Color(0, 50, 50, 50);
 			if (block instanceof ShulkerBoxBlock shulkerBlock) {
 				DyeColor dye = shulkerBlock.getColor();
-				if (dye == null) return new Color(WHITE.getRed(), WHITE.getGreen(), WHITE.getBlue(), 50);
-				float[] colorComponents = dye.getTextureDiffuseColors();
-				int r = (int) (colorComponents[0] * 255);
-				int g = (int) (colorComponents[1] * 255);
-				int b = (int) (colorComponents[2] * 255);
+				if (dye == null) return backgroundColor.getValue();
+				int colorComponents = dye.getTextureDiffuseColor();
+				int alpha = 50;
 
-				return new Color(r, g, b, 50	);
+				Color baseColor = new Color(colorComponents);
+
+                return new Color(baseColor.getRed(), baseColor.getGreen(), baseColor.getBlue(), alpha);
 			}
 		}
 		return new Color(WHITE.getRed(), WHITE.getGreen(), WHITE.getBlue(), 50);
