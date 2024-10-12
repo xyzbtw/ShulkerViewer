@@ -72,8 +72,8 @@ public class ShulkerViewer extends ToggleableModule {
 	public void onRender2D(EventRender2D event) {
 		final GuiGraphics context = event.getRenderContext().graphics();
 
-		int screenWidth = mc.getWindow().getGuiScaledWidth();
-		int screenHeight = mc.getWindow().getGuiScaledHeight();
+		float screenWidth = mc.getWindow().getGuiScaledWidth() / scale.getValue();
+		float screenHeight = mc.getWindow().getGuiScaledHeight() / scale.getValue();
 
 		int y = (int) ((3 + offset));
 		int totalHeight = 0;
